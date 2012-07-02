@@ -1,24 +1,31 @@
 #!/usr/bin/ruby 
 
-load './fichier.rb'
 
 
-def help(arg=nil)
-	if(arg != nil)
-		print arg
-	else
-		print "cake is a lie"
+" 
+Parcourir une arborenscence ou un fichier et faire des statistiques
+Compter le nombre de fichier de tel extension (nil = pas d'extension) dans un repertoire 
+repertoireouchercher(string) extension(expression rationnelle) -d(decroissance)a(alpabethique)
+terminal (lance un parser) quit = quitte
+--> affiche des resultats
+"
+def my_ls(name,extensions={})
+	for t in Dir.entries(name)
+		if(t =~ /^\w+(\.\w+)+$/)
+			for i in t.split(".")[1,t.split(".").length]
+				extensions[i]==nil ? extensions[i]=1 : extensions[i]+=1
+			end
+		end
+		if !(t =~ /\.|\.\./) && File.directory?(name+"/"+t)
+			my_ls(name+"/"+t,extensions)
+		end	
 	end
+	return extensions
 end
 
-def main()
-	if ( ARGV[0] == "-h" && ARGV.length < 3)
-		help(ARGV[1])
-i	elsif ( ARGV[0] =~ /-f(r)?/ && ARGV.length < 10 && verifier_fichier())
-		lecture_fichier()
-	else
-		print "Tapez -h pour les arguments du programmes.\n"	
-	end
+def erreur(message)
+	puts message
 end
 
-main()
+print (ARGV.length > 0) ? (File.directory?(ARGV[0]) ? my_ls(ARGV[0]) : "Pas un repertoire" ):  "mettre un argument"
+puts ""
