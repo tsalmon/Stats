@@ -1,17 +1,43 @@
-def my_ls(name,extensions={})
+def my_ls(name, extensions={})
 	for t in Dir.entries(name)
 		if(t =~ /^\w+(\.\w+)+$/)
 			for i in t.split(".")[1,t.split(".").length]
-				if extensions[i] == nil 
-					extensions[i] = 1
-					extensions[i + " taille"] = 0
-				else
-					extensions[i]+=1
-					extensions[i + " taille"]+= t.size
+				if extensions[i + " nombre"] == nil 
+					extensions[i + " nombre"] = 1
+					extensions[i + " taille"] = File.stat(name + "/" + t).size
+					
+					extensions[i + " recentnom"] = t
+					extensions[i + " recentdate"] = File.stat(name + "/" + t).ctime 
+					extensions[i + " recentchemin"] = name + "/" + t 
+					
+					extensions[i + " vieuxnom"] = t
+					extensions[i + " vieuxdate"] = File.stat(name + "/" + t).ctime
+					extensions[i + " vieuxchemin"] = name + "/" + t
+					
+					extensions[i + " lourdnom"] = t
+					extensions[i + " lourdpoid"] = File.stat(name + "/" + t).size
+					extensions[i + " lourdchemin"] = name + "/" + t 
+					
+				else	
+					extensions[i + " nombre"] += 1
+					extensions[i + " taille"] += File.stat(name + "/" + t).size
+					if (extensions[i + " recentdate"].to_i < File.stat(name + "/" + t).ctime().to_i)
+						extensions[i + " recentnom"] = t
+						extensions[i + " recentdate"] = File.stat(name + "/" + t).ctime
+						extensions[i + " recentchemin"] = name + "/" + t
+					elsif (extensions[i + " vieuxdate"].to_i > File.stat(name + "/" + t).ctime().to_i )
+						extensions[i + " vieuxnom"] = t
+						extensions[i + " vieuxdate"] = File.stat(name + "/" + t).ctime
+						extensions[i + " vieuxchemin"] = name + "/" + t
+					end
+					if (extensions[i + " lourdpoid"] < File.stat(name + "/" +t).size)
+						extensions[i + " lourdnom"] = t
+						extensions[i + " lourdpoid"] = File.stat(name + "/" + t).size
+						extensions[i + " lourdchemin"] = name + "/" + t
+					end
 				end
 			end
-		end
-		if !(t =~ /\.|\.\./) && File.directory?(name+"/"+t)
+		elsif !(t =~ /\.?\./) && File.directory?(name+"/"+t)
 			my_ls(name+"/"+t,extensions)
 		end	
 	end
@@ -19,10 +45,18 @@ def my_ls(name,extensions={})
 end
 
 def lire(message)
-	puts "Nom\tNombre\tTaille"
-	message.each { |a,b| print (a.split.length == 1) ? "#{a.split[0]}\t#{b}" : "\t#{b}\n"}
-	return ""
+	i = 11
+	message.each do |k,v|
+		if(i%11==0)
+			i = 0
+			puts k.split()[0]
+		end
+			puts "\t"+ k.split()[1].to_s + " : " + v.to_s
+		i += 1
+	end
+	return nil
 end
+
 
 print (ARGV.length > 0) ? (File.directory?(ARGV[0]) ? lire(my_ls(ARGV[0])) : "Pas un repertoire" ):  "mettre un argument"
 puts ""
